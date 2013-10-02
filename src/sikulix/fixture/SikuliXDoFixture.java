@@ -513,13 +513,12 @@ public class SikuliXDoFixture extends DoFixture {
 	}
 	/**
 	 * <pre>  
-	 * Use to implement Error recovery routines. Will stop test execution if there was no error.
-	 * All the actions below this method are executed only when current test already failed.
-	 * Common usage - add to tear down page to restart an application on error.
+	 * Will not execute any action below "onError" method to the end of table unless test failed.
+	 * Common usage - add to tear down page to restart an application in case of error.
 	 * Failed test will remain failed but further tests may have chance to use recovered environment. 
 	 * </pre>  
 	 */
-	public void proceedOnError()
+	public void onError()
 	{
 		int errorCount = 0;
 		Counts cnt = super.getRuntimeContext().getTestResults().getCounts();
