@@ -77,6 +77,7 @@ public class SikuliXDoFixtureTest extends TestCase {
 		r.highlight(1);
 		p = sdf.usePattern("/img/calc-WIN7.png");
 		assertEquals(sdf.getSystemUnderTest().toString(), p.toString());
+		//assertTrue(sdf.isMatchPresent("http://localhost:8888/files/img/calc.png"));
 		assertFalse(sdf.isMatchPresent("https://www.google.com/images/srpr/logo4w.png"));
 		m = sdf.useMatch("/img/calc-WIN7.png");
 		assertEquals(sdf.getSystemUnderTest().toString(), r.getLastMatch().toString());
