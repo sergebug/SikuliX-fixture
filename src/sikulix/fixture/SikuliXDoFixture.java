@@ -16,6 +16,8 @@ import org.sikuli.script.Region;
 import org.sikuli.script.Screen;
 import org.sikuli.script.ScreenImage;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import fit.Counts;
 //import fit.TypeAdapter;
 import fitlibrary.DoFixture;
@@ -30,6 +32,7 @@ public class SikuliXDoFixture extends DoFixture {
 	private Region _lastRegion; 
 	private Match _lastMatch;
 	private Pattern _lastPattern;
+	private String _lastRegionSnapshot; 
 	private App _lastApp;
 	private Env _lastEnv;
 	public Object SystemUnderTest;
@@ -92,8 +95,33 @@ public class SikuliXDoFixture extends DoFixture {
 	 */
 	private Region useRegion(Region r) {
 		_lastRegion = r;
+		_lastRegionSnapshot = captureRegion(_lastRegion);
 		setSystemUnderTest(_lastRegion);
 		return _lastRegion;
+	}
+	/**
+	 * Captures region in temporary file and returns file path. File is not being kept after class deleted.
+	 * @param r - Region
+	 * @return - Region
+	 */
+	private String captureRegion(Region r){
+		Screen scr = r.getScreen();
+		String filename = scr.capture(r.getX(),r.getY(),r.getW(),r.getH()).getFile();
+		Debug.info(filename);
+		return filename;
+
+	}
+	/**
+	 * Returns true if last used region is still visible. Could be used to identify hidden window.
+	 * @param r - Region
+	 * @return - Region
+	 */
+	public boolean isRegionVisible()
+	{
+			Pattern p = new Pattern(_lastRegionSnapshot).exact();
+			Region searchRegion = new Region(_lastRegion);
+			boolean result = (searchRegion.exists(p,0)!=null);
+			return result;
 	}
 	/**
 	 * Sets context to the Region of application for given title
@@ -550,12 +578,9 @@ public class SikuliXDoFixture extends DoFixture {
 	 */
 	public String getScreenshot()
 	{
-		Screen scr;
 		String log, from;
 		try {
-			scr = _lastRegion.getScreen();
-			ScreenImage si = scr.capture(scr.getBounds());
-		    from = si.getFile();  // current file. will be deleted by sikuli engine upon completion
+		    from = captureRegion(_lastRegion.getScreen());  // current file. will be deleted by sikuli engine upon completion
 		    log = from.replace("sikuli","screenshot");
 		    FileManager.xcopy(from, log, null);
 			Debug.info(log);

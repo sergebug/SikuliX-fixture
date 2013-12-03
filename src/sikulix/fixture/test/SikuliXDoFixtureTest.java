@@ -90,6 +90,7 @@ public class SikuliXDoFixtureTest extends TestCase {
 		m = sdf.useMatch("/img/plus-WIN7.png");
 		sdf.clickOn();
 		r = sdf.useRegion("Calculator");
+		assertTrue(sdf.isRegionVisible());
 		m = sdf.useMatch("/img/1.png");
 		m.click();
 		sdf.press("ENTER");
@@ -97,5 +98,6 @@ public class SikuliXDoFixtureTest extends TestCase {
 		String result = Env.getClipboard();
 		assertEquals("2",result);
 	 	calc.close();
+		assertFalse(sdf.isRegionVisible());
     }
 }
