@@ -436,14 +436,28 @@ public class SikuliXDoFixture extends DoFixture {
 	}
 	/**
 	 * Sets search region on the right from the found match within current application window
-	 * Useful for controls where label is on the left from the entry area 
-	 * @param s - image file
+	 * Useful for controls where label is on the left from the entry area.
+	 * Height of region is defined by height of pattern 
+	 * @param imageFile - image file path or URL
 	 */
-	public void onTheRightFromMatch(String s){
-		Match m = useMatch(s);
+	public void onTheRightFromMatch(String imageFile){
+		Match m = useMatch(imageFile);
 		Region w = _lastApp.window();
 		int maxWidth = w.getW()-m.getX();
 		Region r = m.right(maxWidth);
+		useRegion(r);
+	};
+	/**
+	 * Sets search region on the right from the found match within current application window
+	 * Useful for fields located on the left from some pattern (i.e. edit-box followed by drop-down)
+	 * Height of region is defined by height of pattern 
+	 * @param imageFile - image file path or URL
+	 */
+	public void onTheLeftFromMatch(String imageFile){
+		Match m = useMatch(imageFile);
+		Region w = _lastApp.window();
+		int maxWidth = m.getX()-w.getX();
+		Region r = m.left(maxWidth);
 		useRegion(r);
 	};
 	/**
