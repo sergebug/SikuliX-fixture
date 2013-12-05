@@ -14,10 +14,6 @@ import org.sikuli.script.Match;
 import org.sikuli.script.Pattern;
 import org.sikuli.script.Region;
 import org.sikuli.script.Screen;
-import org.sikuli.script.ScreenImage;
-
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
 import fit.Counts;
 //import fit.TypeAdapter;
 import fitlibrary.DoFixture;
@@ -43,7 +39,7 @@ public class SikuliXDoFixture extends DoFixture {
 	 * SikuliX do fixture 
 	 */
 	public SikuliXDoFixture() {
-		_lastRegion = useScreen(); // Screen is default region
+		useScreen(); // Screen is default region
 		maxTimeout = Settings.AutoWaitTimeout;
 	}
 	/** 
@@ -66,19 +62,17 @@ public class SikuliXDoFixture extends DoFixture {
 	 * @return Region of the retrieved window
 	 */
 	public Region waitForWindow(String title) {
-		int i = 0; 
-		while ((isWindowPresent(title)==false) && (i<maxTimeout)) {
+		int i = 0;
+		Region r = null;
+		while ((isWindowPresent(title)==false) && (i<maxTimeout*5)) {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			i++;
 		}
-		App app = new App(title);
-		_lastRegion = app.window();	
-		setSystemUnderTest(_lastRegion);
-		return _lastRegion;
+		r = useRegion(title);
+		return r;
 	}
 	/** 
 	 * Sets context to the last used Region
@@ -94,7 +88,7 @@ public class SikuliXDoFixture extends DoFixture {
 	 * @return - Region
 	 */
 	private Region useRegion(Region r) {
-		_lastRegion = r;
+		_lastRegion = (r==null) ? new Screen() : r;
 		_lastRegionSnapshot = captureRegion(_lastRegion);
 		setSystemUnderTest(_lastRegion);
 		return _lastRegion;
@@ -105,11 +99,18 @@ public class SikuliXDoFixture extends DoFixture {
 	 * @return - Region
 	 */
 	private String captureRegion(Region r){
-		Screen scr = r.getScreen();
-		String filename = scr.capture(r.getX(),r.getY(),r.getW(),r.getH()).getFile();
-		Debug.info(filename);
+		String filename=null;
+		try {
+			Debug.info(r.toString());
+			Screen scr = r.getScreen();
+			filename = scr.capture(r.getX(),r.getY(),r.getW(),r.getH()).getFile();
+			Debug.info(filename);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			filename = "Failed to capture region.";
+		}
 		return filename;
-
 	}
 	/**
 	 * Returns true if last used region is still visible. Could be used to identify hidden window.
@@ -160,6 +161,9 @@ public class SikuliXDoFixture extends DoFixture {
 	private Match useMatch(Pattern p) {
 		Match m;
 		try {
+			Debug.info("Use Match:");
+			Debug.info(_lastRegion.toString());
+			Debug.info(p.toString());
 			m = _lastRegion.find(p);
 			return useMatch(m);
 		} catch (FindFailed e) {
@@ -227,7 +231,7 @@ public class SikuliXDoFixture extends DoFixture {
 	 */
 	private App useApplication(App a) {
 		_lastApp = a;
-		_lastRegion = a.window();
+		useRegion(a.window());
 		setSystemUnderTest(_lastApp);
 		return _lastApp;
 	}
@@ -509,12 +513,12 @@ public class SikuliXDoFixture extends DoFixture {
 	public Boolean isWindowPresent(String windowTitle){
 		App a = new App(windowTitle);
 		Region window = a.window();
-		if (window==null) {
+		if ((window==null) || (captureRegion(window)==null)){
 			return false;
 			}
 		else {
 			return true;
-			}
+		}
 	};
 	/**
 	 * Return true (or false) if given image exists on the screen
