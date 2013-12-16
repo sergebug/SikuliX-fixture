@@ -22,10 +22,6 @@ import fitlibrary.DoFixture;
  * @author szukov
  *
  */
-/**
- * @author szukov
- *
- */
 @SuppressWarnings("deprecation")
 public class SikuliXDoFixture extends DoFixture {
 	private float maxTimeout = 30;
@@ -634,7 +630,6 @@ public class SikuliXDoFixture extends DoFixture {
 		Debug.info((Criteria) ? "Processed table" : "Skipped table");
 		if (Criteria!=true){
 			return new CommentFixture(true); 
-			//setTraverse(getRuntimeContext().getGlobal().ignoreTable());
 		}
 		else {
 			return this.SystemUnderTest;
