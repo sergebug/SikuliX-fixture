@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 
 import org.sikuli.basics.Debug;
 import org.sikuli.basics.FileManager;
-import org.sikuli.basics.Settings;
 import org.sikuli.script.App;
 import org.sikuli.script.Env;
 import org.sikuli.script.FindFailed;
@@ -14,10 +13,15 @@ import org.sikuli.script.Match;
 import org.sikuli.script.Pattern;
 import org.sikuli.script.Region;
 import org.sikuli.script.Screen;
+
 import fit.Counts;
-//import fit.TypeAdapter;
+import fitlibrary.CommentFixture;
 import fitlibrary.DoFixture;
 
+/**
+ * @author szukov
+ *
+ */
 /**
  * @author szukov
  *
@@ -40,7 +44,7 @@ public class SikuliXDoFixture extends DoFixture {
 	 */
 	public SikuliXDoFixture() {
 		useScreen(); // Screen is default region
-		maxTimeout = Settings.AutoWaitTimeout;
+		//maxTimeout = Settings.AutoWaitTimeout;
 	}
 	/** 
 	 * Retrieve current context (SystemUnderTests) object
@@ -54,7 +58,7 @@ public class SikuliXDoFixture extends DoFixture {
 	 */
 	@Override
 	public void setSystemUnderTest(Object SystemUnderTests) {
-		SystemUnderTest = SystemUnderTests;
+		this.SystemUnderTest = SystemUnderTests;
 	}
 	/**
 	 * wait for the window with Given title
@@ -64,7 +68,7 @@ public class SikuliXDoFixture extends DoFixture {
 	public Region waitForWindow(String title) {
 		int i = 0;
 		Region r = null;
-		while ((isWindowPresent(title)==false) && (i<maxTimeout*5)) {
+		while ((isWindowPresent(title)==false) && (i<maxTimeout)) {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -88,7 +92,8 @@ public class SikuliXDoFixture extends DoFixture {
 	 * @return - Region
 	 */
 	private Region useRegion(Region r) {
-		_lastRegion = (r==null) ? new Screen() : r;
+		_lastRegion = (r==null) ? new Screen() : new Region(r);
+		//_lastRegion.setLocation(_lastRegion.getCenter());
 		_lastRegionSnapshot = captureRegion(_lastRegion);
 		setSystemUnderTest(_lastRegion);
 		return _lastRegion;
@@ -101,7 +106,7 @@ public class SikuliXDoFixture extends DoFixture {
 	private String captureRegion(Region r){
 		String filename=null;
 		try {
-			Debug.info(r.toString());
+			//Debug.info(r.toString());
 			Screen scr = r.getScreen();
 			filename = scr.capture(r.getX(),r.getY(),r.getW(),r.getH()).getFile();
 			Debug.info(filename);
@@ -159,7 +164,7 @@ public class SikuliXDoFixture extends DoFixture {
 	 * @return - Match
 	 */
 	private Match useMatch(Pattern p) {
-		Match m;
+		Match m=null;
 		try {
 			Debug.info("Use Match:");
 			Debug.info(_lastRegion.toString());
@@ -169,7 +174,7 @@ public class SikuliXDoFixture extends DoFixture {
 		} catch (FindFailed e) {
 			e.printStackTrace();
 		}
-		return null;
+		return m;
 	}
 	/**
 	 * Set context to the Match using find in the lastRegion for Pattern defined by input string
@@ -231,7 +236,7 @@ public class SikuliXDoFixture extends DoFixture {
 	 */
 	private App useApplication(App a) {
 		_lastApp = a;
-		useRegion(a.window());
+		useRegion(_lastApp.window());
 		setSystemUnderTest(_lastApp);
 		return _lastApp;
 	}
@@ -243,7 +248,7 @@ public class SikuliXDoFixture extends DoFixture {
 	public App useApplication(String s) {
 		App a = new App(s);
 		useApplication(a);
-		return _lastApp;
+		return a;
 	}
 	/**
 	 * Set Context to the full screen (default Region)
@@ -303,7 +308,6 @@ public class SikuliXDoFixture extends DoFixture {
 						result+=f.getInt(null);
 					} catch (IllegalArgumentException 
 							| IllegalAccessException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -319,7 +323,6 @@ public class SikuliXDoFixture extends DoFixture {
 					result = result.replaceAll(keyName, (String) f.get(null));
 				} catch (IllegalArgumentException
 						| IllegalAccessException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				}
@@ -371,7 +374,7 @@ public class SikuliXDoFixture extends DoFixture {
 	 * @return 1 - was possible; 0 - was not possible
 	 */
 	public int typeInRegion(String s){
-		Debug.info("typeInRegion(String "+s.toString()+")");
+		//Debug.info("typeInRegion(String "+s.toString()+")");
 		return _lastRegion.type(s);
 	};
 	/**
@@ -429,42 +432,46 @@ public class SikuliXDoFixture extends DoFixture {
 	/**
 	 * Sets search region to the whole application window
 	 */
-	public void inTheApplicationWindow(){
-		useRegion(_lastApp.window());
+	public Region inTheApplicationWindow(){
+		return useRegion(_lastApp.window());
 	}
 	/**
 	 * Sets search region to the top half of application window 
 	 */
-	public void inTheTop(){
+	public Region inTheTop(){
 		Region r = _lastApp.window();
 		r.setH(r.getH()/2);
 		useRegion(r);
+		return r;
 	}
 	/**
 	 * Sets search region to the left half of application window 
 	 */
-	public void onTheLeft(){
+	public Region onTheLeft(){
 		Region r = _lastApp.window();
 		r.setW(r.getW()/2);
 		useRegion(r);
+		return r;
 	}
 	/**
 	 * Sets search region to the bottom half of application window 
 	 */
-	public void inTheBottom(){
+	public Region inTheBottom(){
 		Region r = _lastApp.window();
 		r.setH(r.getH()/2);
 		r.setY(r.getY()+r.getH());
 		useRegion(r);
+		return r;
 	}
 	/**
 	 * Sets search region to the right half of application window 
 	 */
-	public void onTheRight(){
+	public Region onTheRight(){
 		Region r = _lastApp.window();
 		r.setW(r.getW()/2);
 		r.setX(r.getX()+r.getW());
 		useRegion(r);
+		return r;
 	}
 	/**
 	 * Sets search region on the right from the found match within current application window
@@ -472,12 +479,13 @@ public class SikuliXDoFixture extends DoFixture {
 	 * Height of region is defined by height of pattern 
 	 * @param imageFile - image file path or URL
 	 */
-	public void onTheRightFromMatch(String imageFile){
+	public Region onTheRightFromMatch(String imageFile){
 		Match m = useMatch(imageFile);
 		Region w = _lastApp.window();
 		int maxWidth = w.getW()-m.getX();
 		Region r = m.right(maxWidth);
 		useRegion(r);
+		return r;
 	};
 	/**
 	 * Sets search region on the right from the found match within current application window
@@ -485,24 +493,26 @@ public class SikuliXDoFixture extends DoFixture {
 	 * Height of region is defined by height of pattern 
 	 * @param imageFile - image file path or URL
 	 */
-	public void onTheLeftFromMatch(String imageFile){
+	public Region onTheLeftFromMatch(String imageFile){
 		Match m = useMatch(imageFile);
 		Region w = _lastApp.window();
 		int maxWidth = m.getX()-w.getX();
 		Region r = m.left(maxWidth);
 		useRegion(r);
+		return r;
 	};
 	/**
 	 * Sets search region below the found match within current application window
 	 * Useful for controls where label is above the entry area 
 	 * @param s - image file
 	 */
-	public void belowMatch(String s){
+	public Region belowMatch(String s){
 		Match m = useMatch(s);
 		Region w = _lastApp.window();
 		int maxHight = w.getH()-m.getY();
 		Region r = m.below(maxHight);
 		useRegion(r);
+		return r;
 	};
 	/**
 	 * Returns true (or false) if given application title present
@@ -544,6 +554,7 @@ public class SikuliXDoFixture extends DoFixture {
 	 * @throws FindFailed
 	 */
 	public Region useRegionBetweenAnd(String imageFrom, String imageTo) throws FindFailed{
+		int x,y,w,h;
 		Region r ;
 		Pattern p;
 		r = new Region(_lastRegion);
@@ -551,10 +562,11 @@ public class SikuliXDoFixture extends DoFixture {
 		Match mFrom = _lastRegion.find(p);
 		p = new Pattern(imageTo);
 		Match mTo = _lastRegion.find(p);
-		r.setX(mTo.getX()-mFrom.getX()-mFrom.getW());
-		r.setY(mTo.getY()-mFrom.getY()-mFrom.getH());
-		r.setW(mTo.getX()-r.getW());
-		r.setH(mTo.getY()-r.getH());
+		x = Math.min(mFrom.getX()+mFrom.getW(),mTo.getX());
+		y = Math.min(mFrom.getY()+mFrom.getH(),mTo.getY());
+		w = Math.max(mFrom.getX()+mFrom.getW(),mTo.getX())-x;
+		h = Math.max(mFrom.getY()+mFrom.getH(),mTo.getY())-y;
+		r = new Region(x,y,w,h);
 		return useRegion(r);
 	}
 	/**
@@ -594,5 +606,45 @@ public class SikuliXDoFixture extends DoFixture {
 			log = "Failed to capture screenshot.";
 		}
 		return log;
+	};
+	/**
+	 * Waits for match to appear in the app window;
+	 * @param imageFile - string to file
+	 * @param title - Window title
+	 * @return Match
+	 */
+	public Match waitForMatchInWindow(String imageFile, String title){
+		int i = 0;
+		while ((isWindowPresent(title)==false) && (isMatchPresent(imageFile)==false) && (i<maxTimeout)) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		useApplication(title);
+		useMatch(imageFile);
+		return _lastMatch;
 	}
+	/**
+	 * If parameter not true then table execution will be stopped. Test can continue with another table.
+	 * @param boolean Criteria
+	 */
+	public Object onTrue(Boolean Criteria){
+		Debug.info((Criteria) ? "Processed table" : "Skipped table");
+		if (Criteria!=true){
+			return new CommentFixture(true); 
+			//setTraverse(getRuntimeContext().getGlobal().ignoreTable());
+		}
+		else {
+			return this.SystemUnderTest;
+		}
+	}; 
+	/**
+	 * If Parameter not false then table execution will be stopped. Test can continue with another table. 
+	 * @param Criteria
+	 */
+	public Object onFalse(Boolean Criteria){
+		return onTrue(!Criteria);
+	};
 }
