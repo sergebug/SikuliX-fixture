@@ -31,6 +31,9 @@ public class SikuliXDoFixtureTest extends TestCase {
 		}
     }
 
+    public void testIsExplorerProcessIdle() throws Exception {
+    	assertNotNull(sdf.isProcessIdle("Explorer"));
+    }
     public void testPauseForFractionOfSecond() {
 		try {
 			sdf.pauseForSeconds(0.5);
