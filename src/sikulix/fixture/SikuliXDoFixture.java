@@ -3,6 +3,10 @@ package sikulix.fixture;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import org.sikuli.basics.Debug;
 import org.sikuli.basics.FileManager;
@@ -15,7 +19,6 @@ import org.sikuli.script.Match;
 import org.sikuli.script.Pattern;
 import org.sikuli.script.Region;
 import org.sikuli.script.Screen;
-
 import fit.Counts;
 import fitlibrary.CommentFixture;
 import fitlibrary.DoFixture;
@@ -42,6 +45,14 @@ public class SikuliXDoFixture extends DoFixture {
 	 */
 	public SikuliXDoFixture() {
 		useScreen(); // Screen is default region
+		List<Field> l = Arrays.asList(keys);
+		Collections.sort(l,Collections.reverseOrder(new Comparator<Field>() {
+            @Override
+            public int compare(final Field field1, final Field field2) {
+                return Integer.compare(field1.getName().length(),field2.getName().length());
+            }
+           } ));
+        keys = (Field[]) l.toArray();
 		// maxTimeout = Settings.AutoWaitTimeout;
 	}
 
@@ -201,9 +212,6 @@ public class SikuliXDoFixture extends DoFixture {
 	private Match useMatch(Pattern p) {
 		Match m = null;
 		try {
-			Debug.info("Use Match:");
-			Debug.info(_lastRegion.toString());
-			Debug.info(p.toString());
 			m = _lastRegion.find(p);
 			return useMatch(m);
 		} catch (FindFailed e) {
@@ -235,6 +243,15 @@ public class SikuliXDoFixture extends DoFixture {
 	 */
 	public Match findMatch(String s) {
 		return useMatch(s);
+	}
+
+	/**
+	 * Finds last used pattern in region
+	 * 
+	 * @return - Match for last used pattern
+	 */
+	public Match findMatch() {
+		return useMatch(_lastPattern);
 	}
 
 	/**
@@ -651,6 +668,21 @@ public class SikuliXDoFixture extends DoFixture {
 	};
 
 	/**
+	 * Return true (or false) if last used pattern exists on the screen
+	 * 
+	 * @return true if exists; false otherwise Does not change context to the
+	 *         match unlike findMatch
+	 */
+	public Boolean isMatchPresent() {
+		try {
+			Pattern p = _lastPattern;
+			_lastRegion.find(p);
+			return true;
+		} catch (FindFailed e) {
+			return false;
+		}
+	};
+	/**
 	 * Return true (or false) if given image exists on the screen
 	 * 
 	 * @param imageFile
@@ -658,13 +690,10 @@ public class SikuliXDoFixture extends DoFixture {
 	 *         match unlike findMatch
 	 */
 	public Boolean isMatchPresent(String imageFile) {
-		try {
-			Pattern p = new Pattern(imageFile);
-			_lastRegion.find(p);
-			return true;
-		} catch (FindFailed e) {
-			return false;
-		}
+		Boolean result;
+		_lastPattern = new Pattern(imageFile);
+		result = isMatchPresent();
+		return result; 
 	};
 
 	/**
@@ -696,6 +725,30 @@ public class SikuliXDoFixture extends DoFixture {
 		return useRegion(r);
 	}
 
+	/**
+	 * Gets a region which starts with imageFrom in the top left corner and ends with imageTo in the bottom right corner (both inclusive).  
+	 * @param imageFrom
+	 * @param imageTo
+	 * @return Match
+	 * @throws FindFailed
+	 */
+	public Region useRegionFromTo(String imageFrom, String imageTo)
+			throws FindFailed {
+		int x, y, w, h;
+		Region r;
+		Pattern p;
+		r = new Region(_lastRegion);
+		p = new Pattern(imageFrom);
+		Match mFrom = _lastRegion.find(p);
+		p = new Pattern(imageTo);
+		Match mTo = _lastRegion.find(p);
+		x = Math.min(mFrom.getX(), mTo.getX());
+		y = Math.min(mFrom.getY(), mTo.getY());
+		w = Math.max(mFrom.getX() + mFrom.getW(), mTo.getX() + mTo.getW())-x;
+		h = Math.max(mFrom.getY() + mFrom.getH(), mTo.getY() + mTo.getH())-y;
+		r = new Region(x, y, w, h);
+		return useRegion(r);
+	}
 	/**
 	 * <pre>
 	 * Will not execute any action below "onError" method to the end of table unless test failed.
