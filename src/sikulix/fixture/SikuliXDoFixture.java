@@ -608,7 +608,7 @@ public class SikuliXDoFixture extends DoFixture {
 	public Region onTheRightFromMatch(String imageFile) {
 		Match m = useMatch(imageFile);
 		Region w = _lastApp.window();
-		int maxWidth = w.getW() - m.getX();
+		int maxWidth = w.getX() + w.getW() - m.getX();
 		Region r = m.right(maxWidth);
 		useRegion(r);
 		return r;
