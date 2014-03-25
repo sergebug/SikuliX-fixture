@@ -602,13 +602,12 @@ public class SikuliXDoFixture extends DoFixture {
 	 * application window Useful for controls where label is on the left from
 	 * the entry area. Height of region is defined by height of pattern
 	 * 
-	 * @param imageFile
-	 *            - image file path or URL
+	 * @param imageFile - image file path or URL
 	 */
 	public Region onTheRightFromMatch(String imageFile) {
 		Match m = useMatch(imageFile);
 		Region w = _lastApp.window();
-		int maxWidth = w.getX() + w.getW() - m.getX();
+		int maxWidth = w.getX() + w.getW() - (m.getX() + m.getW());
 		Region r = m.right(maxWidth);
 		useRegion(r);
 		return r;
@@ -620,13 +619,12 @@ public class SikuliXDoFixture extends DoFixture {
 	 * pattern (i.e. edit-box followed by drop-down) Height of region is defined
 	 * by height of pattern
 	 * 
-	 * @param imageFile
-	 *            - image file path or URL
+	 * @param imageFile - image file path or URL
 	 */
 	public Region onTheLeftFromMatch(String imageFile) {
 		Match m = useMatch(imageFile);
 		Region w = _lastApp.window();
-		int maxWidth = m.getX() - w.getX();
+		int maxWidth = m.getX()-w.getX();
 		Region r = m.left(maxWidth);
 		useRegion(r);
 		return r;
@@ -636,14 +634,15 @@ public class SikuliXDoFixture extends DoFixture {
 	 * Sets search region below the found match within current application
 	 * window Useful for controls where label is above the entry area
 	 * 
-	 * @param s
-	 *            - image file
+	 * @param imageFile - image file
 	 */
-	public Region belowMatch(String s) {
-		Match m = useMatch(s);
+	public Region belowMatch(String imageFile) {
+		Match m = useMatch(imageFile);
 		Region w = _lastApp.window();
-		int maxHight = w.getH() - m.getY();
+		int maxHight = (w.getH() + w.getY()) - (m.getH()+m.getY());
 		Region r = m.below(maxHight);
+		r.setX(w.getX());
+		r.setW(w.getW());
 		useRegion(r);
 		return r;
 	};
